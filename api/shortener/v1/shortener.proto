@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package shortener.v1;
+option go_package = "shorturl/api/shortener/v1;shortenerV1";
+
+// 短链转换微服务接口定义
+service Shortener {
+// 1. 长链转短链接口
+rpc Shorten (ShortenRequest) returns (ShortenResponse);
+
+// 2. 短链还原长链接口
+rpc Expand (ExpandRequest) returns (ExpandResponse);
+}
+
+// -----------------【请求与响应数据结构】-----------------
+
+// 长转短请求参数
+message ShortenRequest {
+string original_url = 1; // 原始长链接（比如：https://github.com/golang/go）
+}
+
+// 长转短响应结果
+message ShortenResponse {
+string short_code = 1;   // 短码后缀（比如：3xK9a）
+string short_url  = 2;   // 拼接好的完整短链（比如：http://127.0.0.1:8080/3xK9a）
+}
+
+// 短查长请求参数
+message ExpandRequest {
+string short_code = 1;   // 短码（比如：3xK9a）
+}
+
+// 短查长响应结果
+message ExpandResponse {
+string original_url = 1; // 还原出来的原始长链接
+}

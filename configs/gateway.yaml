@@ -1,0 +1,5 @@
+server:
+  port: 8080                 # 网关对外暴露的 HTTP 端口
+
+transform_rpc:
+  addr: "127.0.0.1:8082"     # 内网 transform-rpc 核心服务的地址

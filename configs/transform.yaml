@@ -1,0 +1,15 @@
+server:
+  port: 8082                # transform-rpc 服务监听的 gRPC 端口
+
+snowflake:
+  start_time: "2026-01-01"  # 起始时间
+  machine_id: 1             # 当前机器编号
+
+mysql:
+  dsn: "root:123456@tcp(127.0.0.1:3306)/shorturl?charset=utf8mb4&parseTime=True&loc=Local"
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: "123456"              # 没有密码就留空
+  db: 0                     # 使用 0 号数据库
+  expiration_hours: 24      # 短链缓存过期时间（小时）
