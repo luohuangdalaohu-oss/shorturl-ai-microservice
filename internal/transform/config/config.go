@@ -8,7 +8,7 @@ import (
 
 // 全局配置结构体
 type Config struct {
-	Server    ServerConfig    `mapstructure:"service"`
+	Server    ServerConfig    `mapstructure:"server"`
 	Snowflake SnowflakeConfig `mapstructure:"snowflake"`
 	MySQL     MySQLConfig     `mapstructure:"mysql"`
 	Redis     RedisConfig     `mapstructure:"redis"`

@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"net"
 
+	"google.golang.org/grpc"
 	shortenerV1 "shorturl/api/shortener/v1"
 	"shorturl/internal/pkg/snowflake"
 	"shorturl/internal/transform/config"
 	"shorturl/internal/transform/dao"
-	"shorturl/internal/transform/server"
-	"shorturl/internal/transform/service"
-
-	"google.golang.org/grpc"
+	"shorturl/internal/transform/handler"
+	"shorturl/internal/transform/logic"
 )
 
 func main() {
@@ -26,17 +25,17 @@ func main() {
 		panic(fmt.Sprintf("初始化雪花算法失败: %v", err))
 	}
 
-	// 3. 初始化 MySQL 和 Redis 连接
+	// 3. 初始化 MySQL 和 Redis 连接（DAO 数据层）
 	d, err := dao.InitDAO(cfg)
 	if err != nil {
 		panic(fmt.Sprintf("初始化数据库连接失败: %v", err))
 	}
 
-	// 4. 组装 Service 业务层和 gRPC Server
-	svc := service.NewShortenerService(d)
-	srv := server.NewServer(svc)
+	// 4. 组装 Logic 业务逻辑层 和 Handler 协议层
+	l := logic.NewShortenerLogic(d)
+	h := handler.NewServer(l)
 
-	// 5. 监听 TCP 端口（如 :8082）
+	// 5. 监听 TCP 端口（:8082）
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -45,7 +44,7 @@ func main() {
 
 	// 6. 创建并注册 gRPC 服务
 	s := grpc.NewServer()
-	shortenerV1.RegisterShortenerServer(s, srv)
+	shortenerV1.RegisterShortenerServer(s, h)
 
 	fmt.Printf("🚀 【transform-rpc 短链微服务】启动成功，正在监听 gRPC 端口 %s ...\n", addr)
 
