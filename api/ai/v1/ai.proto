@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package ai.v1;
+
+option go_package = "shorturl/api/ai/v1;aiV1";
+
+// AI 智能微服务接口定义
+service AIService {
+  // 1. 网址安全与钓鱼风险检测
+  rpc CheckURLSafety (CheckURLSafetyRequest) returns (CheckURLSafetyResponse);
+  // 2. 网页智能摘要提取
+  rpc SummarizeURL (SummarizeURLRequest) returns (SummarizeURLResponse);
+}
+
+// ----------------- 安全检测 DTO -----------------
+message CheckURLSafetyRequest {
+  string url = 1;
+}
+
+message CheckURLSafetyResponse {
+  bool is_safe = 1;          // 是否安全（true=安全放行，false=恶意拦截）
+  string risk_level = 2;     // 风险等级：SAFE / LOW / MEDIUM / HIGH
+  string risk_category = 3;  // 风险类型（如：钓鱼网站、仿冒官网、电信诈骗、色情暴力）
+  string reason = 4;         // 大模型给出的详细风险研判原因
+}
+
+// ----------------- 网页摘要 DTO -----------------
+message SummarizeURLRequest {
+  string url = 1;
+}
+
+message SummarizeURLResponse {
+  string title = 1;          // 网页标题
+  string summary = 2;        // 核心内容摘要（100字以内）
+  repeated string tags = 3;  // 网页关键词标签
+}

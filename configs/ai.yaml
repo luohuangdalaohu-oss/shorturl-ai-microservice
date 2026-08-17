@@ -1,0 +1,14 @@
+server:
+  port: 8084                    # ai-service 运行的 gRPC 端口
+
+ai:
+  # 支持任何 OpenAI 兼容的大模型（默认 DeepSeek API）
+  base_url: "https://api.deepseek.com/v1"
+  api_key: ""                   # 如果你有 DeepSeek 或其他 API Key 填这里；没填也没关系，内置了智能安全规则引擎兜底！
+  model: "deepseek-chat"
+
+redis:
+  addr: "localhost:6379"
+  password: "123456"
+  db: 0
+  expiration_hours: 24          # AI 检测结果缓存 24 小时（省钱、省 Token、毫秒级响应！）

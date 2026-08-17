@@ -2,4 +2,7 @@ server:
   port: 8080                 # 网关对外暴露的 HTTP 端口
 
 transform_rpc:
-  addr: "127.0.0.1:8082"     # 内网 transform-rpc 核心服务的地址
+  addr: "127.0.0.1:8082"     # 核心短链服务地址
+
+ai_rpc:
+  addr: "127.0.0.1:8084"     # AI 智能体微服务地址

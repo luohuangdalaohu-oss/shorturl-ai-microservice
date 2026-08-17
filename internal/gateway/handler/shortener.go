@@ -5,31 +5,47 @@ import (
 	"net/http"
 	"time"
 
+	aiV1 "shorturl/api/ai/v1"
 	shortenerV1 "shorturl/api/shortener/v1"
 	"shorturl/internal/gateway/rpc_client"
 
 	"github.com/gin-gonic/gin"
 )
 
-// ShortenReq HTTP 请求入参结构体
 type ShortenReq struct {
 	URL string `json:"url" binding:"required"`
 }
 
-// ShortenHandler 处理 POST /api/v1/shorten 请求
+// ShortenHandler 处理生成短链请求（带 AI 智能风控反诈）
 func ShortenHandler(c *gin.Context) {
 	var req ShortenReq
-	// 1. 解析前端发来的 JSON 数据
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "参数错误: url不能为空"})
 		return
 	}
 
-	// 2. 设置 2 秒超时
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// 3. 拿起对讲机，通过 gRPC 呼叫后端的 transform-rpc 服务！
+	// 🛡️ 🔥 第一步：呼叫 AI Agent 进行全方位反诈安全与钓鱼风控审计！
+	safetyResp, err := rpc_client.AIClient.CheckURLSafety(ctx, &aiV1.CheckURLSafetyRequest{
+		Url: req.URL,
+	})
+	if err == nil && safetyResp != nil && !safetyResp.GetIsSafe() {
+		// 🚫 如果 AI Agent 判定为高危恶意/钓鱼网址，直接予以熔断拦截！
+		c.JSON(http.StatusForbidden, gin.H{
+			"code": 403,
+			"msg":  "【AI 安全智能体拦截】" + safetyResp.GetReason(),
+			"data": gin.H{
+				"risk_level":    safetyResp.GetRiskLevel(),
+				"risk_category": safetyResp.GetRiskCategory(),
+				"reason":        safetyResp.GetReason(),
+			},
+		})
+		return
+	}
+
+	// ⚡ 第二步：AI 审计安全通过，调用短链核心服务生成短链！
 	rpcResp, err := rpc_client.ShortenerClient.Shorten(ctx, &shortenerV1.ShortenRequest{
 		OriginalUrl: req.URL,
 	})
@@ -38,29 +54,32 @@ func ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	// 4. 将结果以漂亮的 JSON 格式返回给前端！
+	// 第三步：返回生成的短链及 AI 审核报告！
 	c.JSON(http.StatusOK, gin.H{
 		"code": 0,
 		"msg":  "success",
 		"data": gin.H{
 			"short_code": rpcResp.GetShortCode(),
 			"short_url":  rpcResp.GetShortUrl(),
+			"ai_security": gin.H{
+				"is_safe":       true,
+				"risk_level":    safetyResp.GetRiskLevel(),
+				"audit_summary": safetyResp.GetReason(),
+			},
 		},
 	})
 }
 
-// RedirectHandler 处理 GET /:shortCode 浏览器 302 重定向跳转！
+// RedirectHandler 浏览器 302 重定向
 func RedirectHandler(c *gin.Context) {
 	shortCode := c.Param("shortCode")
 	if shortCode == "" || shortCode == "favicon.ico" {
 		return
 	}
 
-	// 1. 设置 1 秒超时
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// 2. 通过 gRPC 问后端：这个短码对应的长链接是啥？
 	rpcResp, err := rpc_client.ShortenerClient.Expand(ctx, &shortenerV1.ExpandRequest{
 		ShortCode: shortCode,
 	})
@@ -69,6 +88,6 @@ func RedirectHandler(c *gin.Context) {
 		return
 	}
 
-	// 3. 🔥 核心魔法：向浏览器下达 HTTP 302 临时重定向指令，浏览器瞬间自动跳转！
+	// HTTP 302 临时重定向
 	c.Redirect(http.StatusFound, rpcResp.GetOriginalUrl())
 }
