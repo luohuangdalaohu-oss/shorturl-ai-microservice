@@ -248,7 +248,8 @@ func (l *SafetyLogic) doLLMRequest(ctx context.Context, reqBody map[string]inter
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", "Bearer "+l.cfg.AI.APIKey)
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	// 3. 发送网络请求并接收大模型的推理结果（放宽至 30 秒适应大模型高峰期排队）
+	client := &http.Client{Timeout: 30 * time.Second}
 	httpResp, err := client.Do(httpReq)
 	if err != nil {
 		return nil, err
