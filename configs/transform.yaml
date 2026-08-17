@@ -1,5 +1,5 @@
 server:
-  port: 8082                # transform-rpc 服务监听的 gRPC 端口
+  port: 8086                # transform-rpc 服务监听的 gRPC 端口
 
 snowflake:
   start_time: "2026-01-01"  # 起始时间
