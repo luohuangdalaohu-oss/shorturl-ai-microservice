@@ -2,10 +2,9 @@ server:
   port: 8084                    # ai-service 运行的 gRPC 端口
 
 ai:
-  # 支持任何 OpenAI 兼容的大模型（默认 DeepSeek API）
-  base_url: "https://api.deepseek.com/v1"
-  api_key: ""                   # 如果你有 DeepSeek 或其他 API Key 填这里；没填也没关系，内置了智能安全规则引擎兜底！
-  model: "deepseek-chat"
+  base_url: "https://api.siliconflow.cn/v1"
+  api_key: "sk-ysjdkbdozpnukmpitfqvoajjukpehbyaxbgpsowuqwpapeeg"
+  model: "deepseek-ai/DeepSeek-V3"
 
 redis:
   addr: "localhost:6379"
