@@ -24,7 +24,7 @@ func ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	// 🛡️ 🔥 第一步：呼叫 AI Agent 进行全方位反诈安全与钓鱼风控审计！
