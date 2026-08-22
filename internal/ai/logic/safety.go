@@ -145,6 +145,13 @@ func (l *SafetyLogic) parseFinalDecision(content string) (*aiV1.CheckURLSafetyRe
 	content = strings.TrimSuffix(content, "```")
 	content = strings.TrimSpace(content)
 
+	// 智能提取完整的 {...} JSON 括号块，过滤掉大模型末尾附加的中文注释或说明
+	start := strings.Index(content, "{")
+	end := strings.LastIndex(content, "}")
+	if start != -1 && end != -1 && end > start {
+		content = content[start : end+1]
+	}
+
 	var res aiV1.CheckURLSafetyResponse
 	if err := json.Unmarshal([]byte(content), &res); err != nil {
 		return nil, fmt.Errorf("解析 Agent JSON 失败: %w, 内容: %s", err, content)
